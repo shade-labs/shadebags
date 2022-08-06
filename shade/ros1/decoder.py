@@ -1,5 +1,5 @@
 """
-    Write data to the Shade format
+    Decompose the bag into Shade format
     Copyright (C) 2022  Emerson Dove
 
     This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,24 @@
 """
 
 
-from .defaults import BagDefaults
+from shade.abc_decoder import Decoder
+from rosbags.rosbag1 import Reader
 
 
-class Writer:
-    def __init__(self, input_file: str, output_file: str, bag_type: BagDefaults):
+class ROS1Decoder(Decoder):
+    def __init__(self, input_file):
         self.__input_file = input_file
-        self.__output_file = output_file
-        self.__bag_type = bag_type
 
-    def write(self):
-        if self.__bag_type == BagDefaults.ROS1:
-            from .ros1.decoder import ROS1Decoder
-            data = ROS1Decoder(self.__input_file).decode()
+    def decode(self):
+        # for topic, msg, t in rosbag.Bag(self.__input_file).read_messages():
+        #     print(f'Topic: {topic}\n'
+        #           f'msg:   {str(msg)[0:1000]}')
+
+        bag = Reader(self.__input_file)
+
+        bag.open()
+
+        for connection, timestamp, rawdata, header in bag.messages():
+            print(f'Header: {type(header)}\n'
+                  f'\tTime: {str(timestamp)} \n'
+                  f'\tRaw : {str(rawdata)[0:1000]}')

@@ -1,5 +1,5 @@
 """
-    Write data to the Shade format
+    Encode Shade format back into rosbag format
     Copyright (C) 2022  Emerson Dove
 
     This program is free software: you can redistribute it and/or modify
@@ -14,18 +14,3 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
-
-from .defaults import BagDefaults
-
-
-class Writer:
-    def __init__(self, input_file: str, output_file: str, bag_type: BagDefaults):
-        self.__input_file = input_file
-        self.__output_file = output_file
-        self.__bag_type = bag_type
-
-    def write(self):
-        if self.__bag_type == BagDefaults.ROS1:
-            from .ros1.decoder import ROS1Decoder
-            data = ROS1Decoder(self.__input_file).decode()
