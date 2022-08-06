@@ -18,6 +18,7 @@
 
 from shade.abc_decoder import Decoder
 from rosbags.rosbag1 import Reader
+import rosbag
 
 
 class ROS1Decoder(Decoder):
@@ -25,15 +26,38 @@ class ROS1Decoder(Decoder):
         self.__input_file = input_file
 
     def decode(self):
-        # for topic, msg, t in rosbag.Bag(self.__input_file).read_messages():
-        #     print(f'Topic: {topic}\n'
-        #           f'msg:   {str(msg)[0:1000]}')
+        def get_headers(ros_msg):
+            try:
+                members = dir(ros_msg.header)
+                header_members = []
+                for member in members:
+                    if member[0] != '_':
+                        if not callable(getattr(ros_msg.header, member)):
+                            header_members.append(member)
+            except AttributeError:
+                return
 
-        bag = Reader(self.__input_file)
+            print(header_members)
+            print(callable(header_members))
+            # header_keys = []
+            # for key in contents:
+            #     if key[0] != "_":
+            #         header_keys.append(key)
+            #
+            # print("Header:")
+            # for key in header_keys:
+            #     print(f'\t{key}: {getattr(ros_msg.header, key)}')
 
-        bag.open()
+        for topic, msg, t in rosbag.Bag(self.__input_file).read_messages():
+            # print(f'Topic: {topic}\n'
+            #       f'Data : {str(msg.data)[0:1000]}')
+            get_headers(msg)
 
-        for connection, timestamp, rawdata, header in bag.messages():
-            print(f'Header: {type(header)}\n'
-                  f'\tTime: {str(timestamp)} \n'
-                  f'\tRaw : {str(rawdata)[0:1000]}')
+        # bag = Reader(self.__input_file)
+        #
+        # bag.open()
+        #
+        # for connection, timestamp, rawdata, header in bag.messages():
+        #     print(f'Header: {header}\n'
+        #           f'\tTime: {str(timestamp)} \n'
+        #           f'\tRaw : {str(rawdata)[0:1000]}')

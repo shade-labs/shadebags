@@ -1,6 +1,6 @@
 import shade
 
-input_path = '../../renv/stairs_compressed.bag'  # '/root/Downloads/stairs_compressed.bag'
+input_path = '/root/Downloads/stairs_compressed.bag' # '../../renv/stairs_compressed.bag'  # '/root/Downloads/stairs_compressed.bag'
 output_path = '/root/Downloads'
 
 if __name__ == "__main__":
