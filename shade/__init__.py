@@ -16,5 +16,5 @@
 """
 
 
-from defaults import BagDefaults as types
+from .defaults import BagDefaults as types
 from .writer import Writer

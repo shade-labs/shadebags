@@ -14,9 +14,11 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import struct
 
 from .defaults import BagDefaults
-import rosbag
+from rosbags.rosbag1 import Reader
+# import rosbag
 
 
 class Writer:
@@ -27,4 +29,16 @@ class Writer:
 
     def write(self):
         if self.__bag_type == BagDefaults.ROS1:
-            pass
+            # for topic, msg, t in rosbag.Bag(self.__input_file).read_messages():
+            #     print(f'Topic: {topic}\n'
+            #           f'msg:   {str(msg)[0:1000]}')
+
+
+            bag = Reader(self.__input_file)
+
+            bag.open()
+
+            for connection, timestamp, rawdata, header in bag.messages():
+                print(f'Header: {type(header)}\n'
+                      f'\tTime: {str(timestamp)} \n'
+                      f'\tRaw : {str(rawdata)[0:1000]}')
