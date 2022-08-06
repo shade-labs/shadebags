@@ -17,4 +17,18 @@
 
 
 class Types:
-    pass
+    def __init__(self):
+        self.types = {
+            'image_msgs/Image': self.__decode_image
+        }
+
+    def convert_type(self, ros_type, data):
+        try:
+            return self.types[ros_type](data)
+        except KeyError:
+            print(f"Could not encode {ros_type}")
+            return data
+
+    @staticmethod
+    def __decode_image(data):
+        return data
