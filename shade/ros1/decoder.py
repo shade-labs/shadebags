@@ -25,6 +25,15 @@ class ROS1Decoder(Decoder):
     def __init__(self, input_file):
         self.__input_file = input_file
 
+    @staticmethod
+    def extract_class_attributes(obj):
+        members = dir(obj)
+        header_members = []
+        for member in members:
+            if member[0] != '_':
+                if not callable(getattr(obj, member)):
+                    header_members.append(member)
+
     def decode(self):
         def get_headers(ros_msg):
             try:
@@ -76,6 +85,7 @@ class ROS1Decoder(Decoder):
                 'topic': topic,
                 'time': headers[time_key],
                 'meta': headers,
+                'type': headers['spec']
             }
 
             if hasattr(msg, 'data'):
