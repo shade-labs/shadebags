@@ -17,6 +17,7 @@
 
 
 from shade.abc_decoder import Decoder
+from shade.shade_msg import ShadeMsg
 import rosbag
 import genpy
 
@@ -26,7 +27,50 @@ class ROS1Decoder(Decoder):
         self.__input_file = input_file
 
     @staticmethod
-    def extract_class_attributes(obj):
+    def __convert_types(ros_dict: dict):
+        def __determine_if_valid_type(value):
+            return isinstance(value, str) or isinstance(value, int) or isinstance(value, float)
+
+        def __convert_type(value):
+            pass
+
+        for key in ros_dict:
+            if not __determine_if_valid_type(ros_dict['key']):
+                pass
+
+    @staticmethod
+    def __fix_time(headers):
+        """
+        Fix the header time to be a nice looking object
+        :param headers: A ROS headers object, extracted from __extract_class_attributes
+        :return: The headers with the nasty removed
+        """
+        time_key = 'stamp'
+        # Confirm that 'stamp' is correct for this message
+        if time_key in headers and isinstance(headers[time_key], genpy.Time):
+            pass
+        else:
+            found = False
+            for key in headers:
+                if isinstance(headers[key], genpy.Time):
+                    found = True
+                    time_key = key
+
+            if not found:
+                raise LookupError("Could not find a time attribute in the message headers")
+
+        # Get rid of nasty ros object
+        headers[time_key] = headers[time_key].to_sec()
+
+        return headers, headers[time_key]
+
+    @staticmethod
+    def __extract_class_attributes(obj) -> dict:
+        """
+        Extract the important attributes from the ROS class
+        :param obj: Any input object
+        :return: Return the attributes like 'width' instead of things like '__init__'
+        """
         members = dir(obj)
         header_members = []
         for member in members:
@@ -34,64 +78,67 @@ class ROS1Decoder(Decoder):
                 if not callable(getattr(obj, member)):
                     header_members.append(member)
 
+        header = {}
+        for header_key in header_members:
+            header[header_key] = getattr(obj, header_key)
+
+        return header
+
     def decode(self):
         def get_headers(ros_msg):
             try:
-                members = dir(ros_msg.header)
-                header_members = []
-                for member in members:
-                    if member[0] != '_':
-                        if not callable(getattr(ros_msg.header, member)):
-                            header_members.append(member)
+                message = self.__extract_class_attributes(ros_msg)
+                header = self.__extract_class_attributes(ros_msg.header)
 
-                spec = ros_msg.header._spec
             except AttributeError:
                 return
 
-            header = {}
-            for header_key in header_members:
-                header[header_key] = getattr(ros_msg.header, header_key)
+            # Fix the header time
+            header, time_ = self.__fix_time(header)
 
-            header['spec'] = spec
-            return header
+            # Make sure the header is removed from the message
+            message.pop('header')
+
+            return {
+                'header': header,
+                'body': message,
+                'time': time_
+            }
 
         extracted_messages = []
 
-        for topic, msg, t in rosbag.Bag(self.__input_file).read_messages():
-            headers = get_headers(msg)
+        input_bag = rosbag.Bag(self.__input_file)
+
+        type_info = input_bag.get_type_and_topic_info().topics
+
+        for topic, msg, t in input_bag.read_messages():
+            parsed = get_headers(msg)
 
             # Skip anything without a header
-            if headers is None:
+            if parsed is None:
                 continue
 
-            time_key = 'stamp'
-            # Confirm that 'stamp' is correct for this message
-            if time_key in headers and isinstance(headers[time_key], genpy.Time):
-                pass
-            else:
-                found = False
-                for key in headers:
-                    if isinstance(headers[key], genpy.Time):
-                        found = True
-                        time_key = key
-
-                if not found:
-                    raise LookupError("Could not find a time attribute in the message headers")
-
-            # Get rid of nasty ros object
-            headers[time_key] = headers[time_key].to_sec()
+            headers = parsed['header']
+            body = parsed.get('body', None)
+            time = parsed['time']
 
             converted_data = {
                 'topic': topic,
-                'time': headers[time_key],
-                'meta': headers,
-                'type': headers['spec']
+                'time': time,
+                'type': type_info[topic].msg_type,
+                'header': headers,
             }
 
-            if hasattr(msg, 'data'):
-                converted_data['data'] = {
-                    msg.data
-                }
-            extracted_messages.append(converted_data)
+            if body is not None:
+                # Add the data in the body tag
+                # In this case it doesn't necessarily have a data tag but most likely has other attributes
+                if 'data' in converted_data:
+                    converted_data['body'] = body['data']
+                    body.pop('data')
+
+                # This is the meta without the data
+                converted_data['meta'] = body
+
+            extracted_messages.append(ShadeMsg(converted_data))
 
         return extracted_messages
