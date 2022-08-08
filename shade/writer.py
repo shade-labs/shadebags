@@ -17,6 +17,7 @@
 
 
 from .defaults import BagDefaults
+from .compression.compressor import Compressor
 
 
 class Writer:
@@ -24,8 +25,19 @@ class Writer:
         self.__input_file = input_file
         self.__output_file = output_file
         self.__bag_type = bag_type
+        self.__compressor = Compressor()
 
     def write(self):
+        compressed_msgs = []
         if self.__bag_type == BagDefaults.ROS1:
             from .ros1.decoder import ROS1Decoder
-            data = ROS1Decoder(self.__input_file).decode()
+            msgs = ROS1Decoder(self.__input_file).decode()
+            for msg in msgs:
+                if 'data' in msg.message:
+                    print("has data")
+                    msg.message['data'] = self.__compressor.compress(msg.message['data'],
+                                                                     msg.message['type'],
+                                                                     msg.message['meta'])
+                compressed_msgs.append(msg)
+
+            print("Compression completed")

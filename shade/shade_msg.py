@@ -18,11 +18,12 @@
 import typing
 
 from typing import TypedDict
+from .defaults import DataTypes
 
-class MsgFormat(TypedDict):
+class MsgFormat(TypedDict, total=False):
     topic: str
-    time: int
-    type: str
+    time: float
+    type: DataTypes
     header: dict
     data: typing.Any
     meta: dict

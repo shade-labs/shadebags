@@ -23,3 +23,8 @@ class BagDefaults(enum.Enum):
     ROS1 = 'ROS1'
     ROS2 = 'ROS2'
     MCAP = 'MCAP'
+
+class DataTypes(enum.Enum):
+    image = 'sensor_msgs/Image'
+    pointcloud = 'sensor_msgs/Pointcloud'
+    none = 'none'

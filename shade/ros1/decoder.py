@@ -14,10 +14,11 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
+from typing import List
 
 from shade.abc_decoder import Decoder
 from shade.shade_msg import ShadeMsg
+from .type_converter import Decoder as TypeDecoder
 import rosbag
 import genpy
 
@@ -84,7 +85,7 @@ class ROS1Decoder(Decoder):
 
         return header
 
-    def decode(self):
+    def decode(self) -> List[ShadeMsg]:
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)
@@ -111,6 +112,8 @@ class ROS1Decoder(Decoder):
 
         type_info = input_bag.get_type_and_topic_info().topics
 
+        type_converter = TypeDecoder()
+
         for topic, msg, t in input_bag.read_messages():
             parsed = get_headers(msg)
 
@@ -125,19 +128,26 @@ class ROS1Decoder(Decoder):
             converted_data = {
                 'topic': topic,
                 'time': time,
-                'type': type_info[topic].msg_type,
                 'header': headers,
             }
 
-            if body is not None:
-                # Add the data in the body tag
-                # In this case it doesn't necessarily have a data tag but most likely has other attributes
-                if 'data' in converted_data:
-                    converted_data['body'] = body['data']
-                    body.pop('data')
+            if body is not None and 'data' in body:
+                converted_data['data'] = body['data']
+                body.pop('data')
 
-                # This is the meta without the data
+                # Copy meta in
                 converted_data['meta'] = body
+
+                converted_data['meta'], converted_data['data'], converted_data['type'] = type_converter.convert_type(type_info[topic].msg_type,
+                                                                                                                     converted_data['meta'],
+                                                                                                                     converted_data['data'])
+            else:
+                # Body is turned into metadata
+                if body is not None:
+                    # Also copy meta in because you can have meta without data
+                    converted_data['meta'] = body
+                    converted_data['meta'], _, converted_data['type'] = type_converter.convert_type(type_info[topic].msg_type, converted_data['meta'])
+
 
             extracted_messages.append(ShadeMsg(converted_data))
 

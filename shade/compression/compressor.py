@@ -1,5 +1,5 @@
 """
-    Maps ROS types to Shade types
+    Chooses a compression algorithm when available
     Copyright (C) 2022  Emerson Dove
 
     This program is free software: you can redistribute it and/or modify
@@ -15,20 +15,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from shade.defaults import DataTypes
+from .png import PNG
 
-class Types:
+class Compressor:
     def __init__(self):
-        self.types = {
-            'image_msgs/Image': self.__decode_image
-        }
-
-    def convert_type(self, ros_type, data):
-        try:
-            return self.types[ros_type](data)
-        except KeyError:
-            print(f"Could not encode {ros_type}")
-            return data
+        pass
 
     @staticmethod
-    def __decode_image(data):
-        return data
+    def compress(data: bytes, shade_type: DataTypes or None, metadata: dict = None):
+        if shade_type == DataTypes.image:
+            return PNG(metadata['encoding'], metadata['width'], metadata['height'], data).compress()
