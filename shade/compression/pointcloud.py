@@ -1,26 +1,33 @@
 import io
-
-from PIL import Image
-
-
-class JPG:
-    def __init__(self, points):
-        self.image = Image.open(io.BytesIO(image))
-
-    @staticmethod
-    def compress(self) -> bytes:
-        buf = io.BytesIO()
-        self.image.save(buf, format='JPEG')
-        jpeg_bytes = buf.getvalue()
-        return jpeg_bytes
-
-
-import rosbag
+from ouster import client, pcap
+from ouster.sdk.examples import pcap as converter
 
 if __name__ == "__main__":
-    input_bag = rosbag.Bag('/root/Downloads/stairs_compressed.bag')
 
-    for topic, msg, t in input_bag.read_messages():
-        print(f'Topic: {topic} \n'
-              f'Msg  : {str(msg)[0:100]} \n'
-              f'Time : {t}')
+    # download from https://ouster.com/resources/lidar-sample-data/
+    pcap_path = '/root/Downloads/OS1.pcap'
+    metadata_path = '/root/Downloads/osconfig.json'
+
+    with open(metadata_path, 'r') as f:
+        info = client.SensorInfo(f.read())
+
+    source = pcap.Pcap(pcap_path, info)
+
+    # convert pcap to las
+    converter.pcap_to_las(source=source, metadata=info)
+
+    # for packet in source:
+    #     if isinstance(packet, client.LidarPacket):
+    #         # Now we can process the LidarPacket. In this case, we access
+    #         # the measurement ids, timestamps, and ranges
+    #         measurement_ids = packet.measurement_id
+    #         timestamps = packet.timestamp
+    #         ranges = packet.field(client.ChanField.RANGE)
+    #         print(f'  encoder counts = {measurement_ids.shape}')
+    #         print(f'  timestamps = {timestamps.shape}')
+    #         print(f'  ranges = {ranges.shape}')
+    #
+    #     elif isinstance(packet, client.ImuPacket):
+    #         # and access ImuPacket content
+    #         print(f'  acceleration = {packet.accel}')
+    #         print(f'  angular_velocity = {packet.angular_vel}')

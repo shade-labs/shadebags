@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 renv/stairs_compressed.bag
+renv/OS1.pcap
+renv/osconfig.json
