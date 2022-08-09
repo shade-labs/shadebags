@@ -16,7 +16,7 @@
 """
 import typing
 
-from shade.defaults import DataTypes
+from shadebags.defaults import DataTypes
 
 class Decoder:
     def __init__(self):

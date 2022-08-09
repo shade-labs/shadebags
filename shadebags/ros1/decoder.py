@@ -16,8 +16,8 @@
 """
 from typing import List
 
-from shade.abc_decoder import Decoder
-from shade.shade_msg import ShadeMsg
+from shadebags.abc_decoder import Decoder
+from shadebags.shade_msg import ShadeMsg
 from .type_converter import Decoder as TypeDecoder
 import rosbag
 import genpy
@@ -128,7 +128,7 @@ class ROS1Decoder(Decoder):
             converted_data = {
                 'topic': topic,
                 'time': time,
-                'header': headers,
+                'header': headers
             }
 
             if body is not None and 'data' in body:
@@ -148,6 +148,13 @@ class ROS1Decoder(Decoder):
                     converted_data['meta'] = body
                     converted_data['meta'], _, converted_data['type'] = type_converter.convert_type(type_info[topic].msg_type, converted_data['meta'])
 
+            # Add the original type to the meta header
+            if isinstance(converted_data['meta'], dict):
+                converted_data['meta']['original_type'] = type_info[topic]
+            else:
+                converted_data['meta'] = {
+                    'original_type': type_info[topic]
+                }
 
             extracted_messages.append(ShadeMsg(converted_data))
 

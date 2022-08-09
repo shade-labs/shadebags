@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from shade.defaults import DataTypes
+from shadebags.defaults import DataTypes
 from .png import PNG
 
 class Compressor:
