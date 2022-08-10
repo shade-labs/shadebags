@@ -21,7 +21,7 @@ setup(
     ext_modules=[
     ],
     author='Emerson Dove',
-    entry_points={'console_scripts': ['shade = shade.cli:main']},
+    entry_points={'console_scripts': ['shade = shadebags.cli.cli:main']},
     author_email='emerson@shaderobotics.com',
     url='https://github.com/open-shade/shadebags',  # Could be github or website
     keywords=['Robotics', 'Ros', 'Compression'],  # Keywords

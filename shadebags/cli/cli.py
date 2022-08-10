@@ -44,8 +44,8 @@ def main():
 
     def map_type(input_type: str):
         try:
-            return BagDefaults[input_type]
-        except KeyError:
+            return BagDefaults(input_type)
+        except ValueError:
             raise KeyError(f"Unable to parse type {input_type} - valid types are {get_valid_types()}")
 
     try:

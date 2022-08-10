@@ -39,11 +39,6 @@ class Writer:
         return msg
 
     def write(self):
-        def convert_dict_to_bytes(dictionary: dict):
-            for key in dictionary:
-                pass
-
-
         compressed_msgs = []
         if self.__bag_type == BagDefaults.ROS1:
             from .ros1.decoder import ROS1Decoder

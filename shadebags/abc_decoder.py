@@ -22,3 +22,8 @@ class Decoder(abc.ABC):
     @abc.abstractmethod
     def decode(self):
         pass
+
+class Encoder(abc.ABC):
+    @abc.abstractmethod
+    def encode(self):
+        pass
