@@ -150,10 +150,10 @@ class ROS1Decoder(Decoder):
 
             # Add the original type to the meta header
             if isinstance(converted_data['meta'], dict):
-                converted_data['meta']['original_type'] = type_info[topic]
+                converted_data['meta']['original_type'] = type_info[topic].msg_type
             else:
                 converted_data['meta'] = {
-                    'original_type': type_info[topic]
+                    'original_type': type_info[topic].msg_type
                 }
 
             extracted_messages.append(ShadeMsg(converted_data))

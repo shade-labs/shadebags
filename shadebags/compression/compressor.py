@@ -16,7 +16,7 @@
 """
 
 from shadebags.defaults import DataTypes
-from .png import PNG
+from .image_formats import PNG, JPEG
 
 class Compressor:
     def __init__(self):
@@ -25,4 +25,7 @@ class Compressor:
     @staticmethod
     def compress(data: bytes, shade_type: DataTypes or None, metadata: dict = None):
         if shade_type == DataTypes.image:
-            return PNG(metadata['encoding'], metadata['width'], metadata['height'], data).compress()
+            if metadata['encoding'] == 'RGB':
+                return JPEG(metadata['encoding'], metadata['width'], metadata['height'], data).compress()
+            else:
+                return PNG(metadata['encoding'], metadata['width'], metadata['height'], data).compress()

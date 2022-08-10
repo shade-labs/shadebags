@@ -15,7 +15,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
 from .defaults import BagDefaults
 from .compression.compressor import Compressor
 from tqdm import tqdm
