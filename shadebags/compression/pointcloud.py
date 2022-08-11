@@ -1,4 +1,6 @@
-import io
+import os
+import laspy
+# fromt .compression import LazBackend
 from ouster import client, pcap
 from ouster.sdk.examples import pcap as converter
 
@@ -13,21 +15,13 @@ if __name__ == "__main__":
 
     source = pcap.Pcap(pcap_path, info)
 
+    directory = './tmp'
     # convert pcap to las
-    converter.pcap_to_las(source=source, metadata=info)
+    # converter.pcap_to_las(source=source, metadata=info, las_dir=directory)
 
-    # for packet in source:
-    #     if isinstance(packet, client.LidarPacket):
-    #         # Now we can process the LidarPacket. In this case, we access
-    #         # the measurement ids, timestamps, and ranges
-    #         measurement_ids = packet.measurement_id
-    #         timestamps = packet.timestamp
-    #         ranges = packet.field(client.ChanField.RANGE)
-    #         print(f'  encoder counts = {measurement_ids.shape}')
-    #         print(f'  timestamps = {timestamps.shape}')
-    #         print(f'  ranges = {ranges.shape}')
-    #
-    #     elif isinstance(packet, client.ImuPacket):
-    #         # and access ImuPacket content
-    #         print(f'  acceleration = {packet.accel}')
-    #         print(f'  angular_velocity = {packet.angular_vel}')
+    # convert las to laz
+    for filename in os.listdir('./tmp'):
+        f = os.path.join('./tmp', filename)
+
+        las = laspy.read(f)
+        las.write(f'./final/{filename[:-4]}.laz')
