@@ -14,6 +14,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from typing import List
 
 from shadebags.abc_decoder import Decoder
@@ -26,18 +27,6 @@ import genpy
 class ROS1Decoder(Decoder):
     def __init__(self, input_file):
         self.__input_file = input_file
-
-    @staticmethod
-    def __convert_types(ros_dict: dict):
-        def __determine_if_valid_type(value):
-            return isinstance(value, str) or isinstance(value, int) or isinstance(value, float)
-
-        def __convert_type(value):
-            pass
-
-        for key in ros_dict:
-            if not __determine_if_valid_type(ros_dict['key']):
-                pass
 
     @staticmethod
     def __fix_time(headers):

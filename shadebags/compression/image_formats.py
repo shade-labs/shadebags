@@ -4,24 +4,38 @@ from PIL import Image
 
 
 class PNG:
-    def __init__(self, format_, width, height, image: bytes):
-        self.og = image
-        self.image = Image.frombytes(format_, (width, height), image, 'raw')
-    
-    def compress(self) -> bytes:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def compress(format_, width, height, image: bytes) -> bytes:
         buf = io.BytesIO()
-        self.image.save(buf, format='PNG')
+        Image.frombytes(format_, (width, height), image, 'raw').save(buf, format='PNG')
+        png_bytes = buf.getvalue()
+        return png_bytes
+
+    @staticmethod
+    def decompress(format_, width, height, image: bytes) -> bytes:
+        buf = io.BytesIO()
+        Image.frombytes(format_, (width, height), image, 'PNG').save(buf, format='raw')
         png_bytes = buf.getvalue()
         return png_bytes
 
 
 class JPEG:
-    def __init__(self, format_, width, height, image: bytes):
-        self.og = image
-        self.image = Image.frombytes(format_, (width, height), image, 'raw')
+    def __init__(self):
+        pass
 
-    def compress(self) -> bytes:
+    @staticmethod
+    def compress(format_, width, height, image: bytes) -> bytes:
         buf = io.BytesIO()
-        self.image.save(buf, format='JPEG')
-        png_bytes = buf.getvalue()
-        return png_bytes
+        Image.frombytes(format_, (width, height), image, 'raw').save(buf, format='JPEG')
+        jpeg_bytes = buf.getvalue()
+        return jpeg_bytes
+
+    @staticmethod
+    def decompress(format_, width, height, image: bytes) -> bytes:
+        buf = io.BytesIO()
+        Image.frombytes(format_, (width, height), image, 'JPEG').save(buf, format='raw')
+        jpeg_bytes = buf.getvalue()
+        return jpeg_bytes

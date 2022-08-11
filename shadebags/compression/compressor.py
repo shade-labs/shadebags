@@ -20,12 +20,19 @@ from .image_formats import PNG, JPEG
 
 class Compressor:
     def __init__(self):
-        pass
+        self.__jpeg = JPEG()
+        self.__png = PNG()
 
-    @staticmethod
-    def compress(data: bytes, shade_type: DataTypes or None, metadata: dict = None):
+    def compress(self, data: bytes, shade_type: DataTypes or None, metadata: dict = None):
         if shade_type == DataTypes.image:
             if metadata['encoding'] == 'RGB':
-                return JPEG(metadata['encoding'], metadata['width'], metadata['height'], data).compress()
+                return self.__jpeg.compress(metadata['encoding'], metadata['width'], metadata['height'], data)
             else:
-                return PNG(metadata['encoding'], metadata['width'], metadata['height'], data).compress()
+                return self.__png.compress(metadata['encoding'], metadata['width'], metadata['height'], data)
+
+    def decompress(self, data: bytes, shade_type: DataTypes or None, metadata: dict = None):
+        if shade_type == DataTypes.image:
+            if metadata['encoding'] == 'RGB':
+                return self.__jpeg.decompress(metadata['encoding'], metadata['width'], metadata['height'], data)
+            else:
+                return self.__png.decompress(metadata['encoding'], metadata['width'], metadata['height'], data)
