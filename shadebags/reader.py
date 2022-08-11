@@ -33,7 +33,7 @@ class Reader:
         self.__bag_type = bag_type
         self.__compressor = Compressor()
 
-    def compress(self, msg):
+    def decompress(self, msg):
         if 'data' in msg.message:
             msg.message['data'] = self.__compressor.decompress(msg.message['data'],
                                                                msg.message['type'],
@@ -41,7 +41,6 @@ class Reader:
         return msg
 
     def read(self):
-        raw_msgs = []
         with open(self.__input_file, 'rb') as input_file:
             print("Reading...")
             raw_msgs = bsdf.decode(input_file.read())
@@ -51,14 +50,17 @@ class Reader:
             msg['type'] = DataTypes(msg['type'])
             compressed_msgs.append(ShadeMsg(msg))
 
+        decompressed_msgs = []
+        print(f'Decompressing using {MAX_CPUS} CPUs...')
+        pool = multiprocessing.Pool(processes=MAX_CPUS)
+        for result in tqdm(pool.map(self.decompress, compressed_msgs)):
+            decompressed_msgs.append(result)
+
+        decompressed_msgs.sort(key=lambda x: x.message['time'])
+
         if self.__bag_type == BagDefaults.ROS1:
             from .ros1.encoder import ROS1Encoder
-            msgs = ROS1Decoder(self.__input_file).decode()
-            print(f'Compressing using {MAX_CPUS} CPUs...')
-            pool = multiprocessing.Pool(processes=MAX_CPUS)
-            for result in tqdm(pool.map(self.compress, msgs)):
-                raw_msgs.append(result)
+            msgs = ROS1Encoder(self.__output_file).encode()
 
             # Make sure everything is in the right order
-            raw_msgs.sort(key=lambda x: x.message['time'])
-            print("Compression completed")
+            print("Decompression completed")

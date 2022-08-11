@@ -23,6 +23,7 @@ from shadebags.shade_msg import ShadeMsg
 from .type_converter import Decoder as TypeDecoder
 import rosbag
 import genpy
+from sensor_msgs.msg import Image
 
 
 class ROS1Encoder(Encoder):
@@ -75,7 +76,13 @@ class ROS1Encoder(Encoder):
 
         return header
 
-    def decode(self) -> List[ShadeMsg]:
+    def encode(self) -> List[ShadeMsg]:
+        with rosbag.Bag(self.__output_file) as output_bag:
+            Image()
+
+
+
+
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)
