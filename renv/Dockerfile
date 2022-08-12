@@ -6,11 +6,13 @@ COPY . .
 
 RUN apt update && apt-get install -y python3-pip
 
-RUN python3 -m pip install pillow ouster-sdk tqdm bsdf
+RUN python3 -m pip install pillow ouster-sdk tqdm bsdf opencv-python
 
 RUN apt update &&  \
     apt install -y \
-        git
+        git \
+        libjpeg-dev \
+        libpng-dev
 
 WORKDIR /tmp
 RUN git clone https://github.com/LASzip/LASzip.git && \
