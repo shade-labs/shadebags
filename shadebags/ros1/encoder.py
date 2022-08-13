@@ -82,21 +82,11 @@ class ROS1Encoder(Encoder):
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)
-                header = self.__extract_class_attributes(ros_msg.header)
-
             except AttributeError:
                 return
 
-            # Fix the header time
-            header, time_ = self.__fix_time(header)
-
-            # Make sure the header is removed from the message
-            message.pop('header')
-
             return {
-                'header': header,
                 'body': message,
-                'time': time_
             }
 
         extracted_messages = []
@@ -110,18 +100,11 @@ class ROS1Encoder(Encoder):
         for topic, msg, t in input_bag.read_messages():
             parsed = get_headers(msg)
 
-            # Skip anything without a header
-            if parsed is None:
-                continue
-
-            headers = parsed['header']
             body = parsed.get('body', None)
-            time = parsed['time']
 
             converted_data = {
                 'topic': topic,
-                'time': time,
-                'header': headers
+                'time': t,
             }
 
             if body is not None and 'data' in body:
@@ -161,7 +144,6 @@ class ROS1Encoder(Encoder):
                 output_file.write(topic, msg, t)
 
         print("Indexing shade output...")
-        # current_env = os.environ.copy()
         subprocess.check_output(f'rosbag reindex {self.__output_file}', shell=True)
 
         matches = utils.determine_backup_file(os.path.dirname(self.__output_file),

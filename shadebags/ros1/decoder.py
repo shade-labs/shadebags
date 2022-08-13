@@ -14,6 +14,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import copy
 import os
 from typing import List
 
@@ -81,21 +82,11 @@ class ROS1Decoder(Decoder):
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)
-                header = self.__extract_class_attributes(ros_msg.header)
-
             except AttributeError:
                 return
 
-            # Fix the header time
-            header, time_ = self.__fix_time(header)
-
-            # Make sure the header is removed from the message
-            message.pop('header')
-
             return {
-                'header': header,
                 'body': message,
-                'time': time_
             }
 
         extracted_messages = []
@@ -107,20 +98,16 @@ class ROS1Decoder(Decoder):
         type_converter = TypeDecoder()
 
         for topic, msg, t in input_bag.read_messages():
+            topic_copy = copy.deepcopy(topic)
+            msg_copy = copy.deepcopy(msg)
+            t_copy = copy.deepcopy(t)
             parsed = get_headers(msg)
 
-            # Skip anything without a header
-            if parsed is None:
-                continue
-
-            headers = parsed['header']
             body = parsed.get('body', None)
-            time = parsed['time']
 
             converted_data = {
                 'topic': topic,
-                'time': time,
-                'header': headers
+                'time': t,
             }
 
             if body is not None and 'data' in body:
@@ -140,14 +127,18 @@ class ROS1Decoder(Decoder):
                     converted_data['meta'] = body
                     converted_data['meta'], _, converted_data['type'] = type_converter.convert_type(type_info[topic].msg_type, converted_data['meta'])
 
-            extracted_messages.append(ShadeMsg(converted_data, topic=topic, msg=msg, t=t))
+            extracted_messages.append(ShadeMsg(converted_data,
+                                               topic=topic_copy,
+                                               msg=msg_copy,
+                                               t=t_copy))
 
         return extracted_messages
 
     def write(self, compressed_data: List[ShadeMsg]):
-
         output_file = rosbag.Bag(self.__output_file, 'w')
-        writes = 0
+
+        data_writes = 0
+        empty_writes = 0
 
         for shade_msg in compressed_data:
             topic = shade_msg.kwargs['topic']
@@ -157,14 +148,11 @@ class ROS1Decoder(Decoder):
             if 'data' in shade_msg.message:
                 msg.data = shade_msg.message['data']
                 output_file.write(topic, msg, t)
-                writes += 1
             else:
                 output_file.write(topic, msg, t)
-                writes += 1
 
 
         print("Indexing shade output...")
-        # current_env = os.environ.copy()
         subprocess.check_output(f'rosbag reindex {self.__output_file}', shell=True)
 
         matches = utils.determine_backup_file(os.path.dirname(self.__output_file),
