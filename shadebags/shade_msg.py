@@ -30,8 +30,9 @@ class MsgFormat(TypedDict, total=False):
 
 class ShadeMsg:
 
-    def __init__(self, msg_dict: MsgFormat = None):
+    def __init__(self, msg_dict: MsgFormat = None, **kwargs):
         self.__message = msg_dict
+        self.__kwargs = kwargs
 
     @property
     def message(self) -> MsgFormat:
@@ -39,3 +40,7 @@ class ShadeMsg:
             raise LookupError("Never initialized with message")
         else:
             return self.__message
+
+    @property
+    def kwargs(self) -> dict:
+        return self.__kwargs

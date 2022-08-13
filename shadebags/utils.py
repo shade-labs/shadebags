@@ -1,5 +1,5 @@
 """
-    Defines interface for Decoder objects
+    Common utilities
     Copyright (C) 2022  Emerson Dove
 
     This program is free software: you can redistribute it and/or modify
@@ -14,24 +14,20 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import os
 
-import abc
 
+def determine_backup_file(folder: str, base_name: str) -> list:
+    files = os.listdir(folder)
 
-class Decoder(abc.ABC):
-    @abc.abstractmethod
-    def decode(self):
-        pass
+    orig_files = []
+    for file in files:
+        if '.orig' in file:
+            orig_files.append(file)
 
-    @abc.abstractmethod
-    def write(self, compressed_msgs):
-        pass
+    matches = []
+    for file in orig_files:
+        if base_name in file:
+            matches.append(file)
 
-class Encoder(abc.ABC):
-    @abc.abstractmethod
-    def encode(self):
-        pass
-
-    @abc.abstractmethod
-    def write(self, decompressed_msgs):
-        pass
+    return matches

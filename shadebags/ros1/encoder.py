@@ -1,5 +1,5 @@
 """
-    Encode Shade format back into rosbag format
+    Encode shade format back to ros format
     Copyright (C) 2022  Emerson Dove
 
     This program is free software: you can redistribute it and/or modify
@@ -15,19 +15,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
 from typing import List
 
 from shadebags.abc_decoder import Encoder
 from shadebags.shade_msg import ShadeMsg
 from .type_converter import Decoder as TypeDecoder
 import rosbag
+import subprocess
+import shadebags.utils as utils
 import genpy
-from sensor_msgs.msg import Image
+import os
 
 
 class ROS1Encoder(Encoder):
-    def __init__(self, output_file):
+    def __init__(self, input_file, output_file):
+        self.__input_file = input_file
         self.__output_file = output_file
 
     @staticmethod
@@ -77,10 +79,6 @@ class ROS1Encoder(Encoder):
         return header
 
     def encode(self) -> List[ShadeMsg]:
-        with rosbag.Bag(self.__output_file) as output_bag:
-            Image()
-
-
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)
@@ -143,14 +141,34 @@ class ROS1Encoder(Encoder):
                     converted_data['meta'] = body
                     converted_data['meta'], _, converted_data['type'] = type_converter.convert_type(type_info[topic].msg_type, converted_data['meta'])
 
-            # Add the original type to the meta header
-            if isinstance(converted_data['meta'], dict):
-                converted_data['meta']['original_type'] = type_info[topic].msg_type
-            else:
-                converted_data['meta'] = {
-                    'original_type': type_info[topic].msg_type
-                }
-
-            extracted_messages.append(ShadeMsg(converted_data))
+            extracted_messages.append(ShadeMsg(converted_data, topic=topic, msg=msg, t=t))
 
         return extracted_messages
+
+
+    def write(self, decompressed_data: List[ShadeMsg]):
+        output_file = rosbag.Bag(self.__output_file, 'w')
+
+        for shade_msg in decompressed_data:
+            topic = shade_msg.kwargs['topic']
+            msg = shade_msg.kwargs['msg']
+            t = shade_msg.kwargs['t']
+
+            if 'data' in shade_msg.message:
+                msg.data = shade_msg.message['data']
+                output_file.write(topic, msg, t)
+            else:
+                output_file.write(topic, msg, t)
+
+        print("Indexing shade output...")
+        # current_env = os.environ.copy()
+        subprocess.check_output(f'rosbag reindex {self.__output_file}', shell=True)
+
+        matches = utils.determine_backup_file(os.path.dirname(self.__output_file),
+                                              os.path.basename(str(self.__output_file).split('.')[0]))
+
+        if not len(matches) == 1:
+            print("Could not remove backup file")
+        else:
+            # Remove the single backup file
+            os.remove(os.path.join(os.path.dirname(self.__output_file), matches[0]))

@@ -16,20 +16,26 @@
 """
 
 
-from .defaults import BagDefaults, DataTypes
+from .defaults import BagDefaults
 from .compression.compressor import Compressor
 from tqdm import tqdm
-import bsdf
 import multiprocessing
-from .shade_msg import ShadeMsg
+import os
 
 MAX_CPUS = multiprocessing.cpu_count()
 
 
 class Reader:
-    def __init__(self, input_file: str, output_file: str, bag_type: BagDefaults):
+    def __init__(self, input_file: str, output_dir: str, bag_type: BagDefaults):
+        if not os.path.isfile(input_file):
+            raise LookupError(f"{input_file} does not reference a file")
+
+        if not os.path.isdir(output_dir):
+            raise LookupError(f"{output_dir} is not a directory")
+
+        file_name = f'{os.path.basename(input_file).split(".")[0]}.bag'
         self.__input_file = input_file
-        self.__output_file = output_file
+        self.__output_file = os.path.join(output_dir, file_name)
         self.__bag_type = bag_type
         self.__compressor = Compressor()
 
@@ -41,26 +47,19 @@ class Reader:
         return msg
 
     def read(self):
-        with open(self.__input_file, 'rb') as input_file:
-            print("Reading...")
-            raw_msgs = bsdf.decode(input_file.read())
-
-        compressed_msgs = []
-        for msg in tqdm(raw_msgs):
-            msg['type'] = DataTypes(msg['type'])
-            compressed_msgs.append(ShadeMsg(msg))
-
         decompressed_msgs = []
-        print(f'Decompressing using {MAX_CPUS} CPUs...')
-        pool = multiprocessing.Pool(processes=MAX_CPUS)
-        for result in tqdm(pool.map(self.decompress, compressed_msgs)):
-            decompressed_msgs.append(result)
-
-        decompressed_msgs.sort(key=lambda x: x.message['time'])
-
         if self.__bag_type == BagDefaults.ROS1:
             from .ros1.encoder import ROS1Encoder
-            msgs = ROS1Encoder(self.__output_file).encode()
+            encoder = ROS1Encoder(self.__input_file, self.__output_file)
+            msgs = encoder.encode()
+            print(f'Decompressing using {MAX_CPUS} CPUs...')
+            pool = multiprocessing.Pool(processes=MAX_CPUS)
+            for result in tqdm(pool.map(self.decompress, msgs)):
+                decompressed_msgs.append(result)
 
             # Make sure everything is in the right order
-            print("Decompression completed")
+            decompressed_msgs.sort(key=lambda x: x.message['time'])
+            print("Compression completed")
+
+            # Easy
+            encoder.write(decompressed_msgs)

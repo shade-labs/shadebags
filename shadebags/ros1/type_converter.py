@@ -20,6 +20,7 @@ from shadebags.defaults import DataTypes
 
 class Decoder:
     def __init__(self):
+        self.__warned_types = {}
         self.types = {
             'sensor_msgs/Image': self.__decode_image
         }
@@ -28,7 +29,9 @@ class Decoder:
         try:
             return self.types[ros_type](body, metadata)
         except KeyError:
-            print(f"No conversion algorithm matching {ros_type}")
+            if ros_type not in self.__warned_types:
+                print(f"No conversion algorithm matching {ros_type}")
+                self.__warned_types[ros_type] = True
             return metadata, body, DataTypes.none
 
     @staticmethod

@@ -14,7 +14,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
+import os
 from typing import List
 
 from shadebags.abc_decoder import Decoder
@@ -22,11 +22,14 @@ from shadebags.shade_msg import ShadeMsg
 from .type_converter import Decoder as TypeDecoder
 import rosbag
 import genpy
+import subprocess
+import shadebags.utils as utils
 
 
 class ROS1Decoder(Decoder):
-    def __init__(self, input_file):
+    def __init__(self, input_file, output_file):
         self.__input_file = input_file
+        self.__output_file = output_file
 
     @staticmethod
     def __fix_time(headers):
@@ -137,14 +140,38 @@ class ROS1Decoder(Decoder):
                     converted_data['meta'] = body
                     converted_data['meta'], _, converted_data['type'] = type_converter.convert_type(type_info[topic].msg_type, converted_data['meta'])
 
-            # Add the original type to the meta header
-            if isinstance(converted_data['meta'], dict):
-                converted_data['meta']['original_type'] = type_info[topic].msg_type
-            else:
-                converted_data['meta'] = {
-                    'original_type': type_info[topic].msg_type
-                }
-
-            extracted_messages.append(ShadeMsg(converted_data))
+            extracted_messages.append(ShadeMsg(converted_data, topic=topic, msg=msg, t=t))
 
         return extracted_messages
+
+    def write(self, compressed_data: List[ShadeMsg]):
+
+        output_file = rosbag.Bag(self.__output_file, 'w')
+        writes = 0
+
+        for shade_msg in compressed_data:
+            topic = shade_msg.kwargs['topic']
+            msg = shade_msg.kwargs['msg']
+            t = shade_msg.kwargs['t']
+
+            if 'data' in shade_msg.message:
+                msg.data = shade_msg.message['data']
+                output_file.write(topic, msg, t)
+                writes += 1
+            else:
+                output_file.write(topic, msg, t)
+                writes += 1
+
+
+        print("Indexing shade output...")
+        # current_env = os.environ.copy()
+        subprocess.check_output(f'rosbag reindex {self.__output_file}', shell=True)
+
+        matches = utils.determine_backup_file(os.path.dirname(self.__output_file),
+                                              os.path.basename(str(self.__output_file).split('.')[0]))
+
+        if not len(matches) == 1:
+            print("Could not remove backup file")
+        else:
+            # Remove the single backup file
+            os.remove(os.path.join(os.path.dirname(self.__output_file), matches[0]))
