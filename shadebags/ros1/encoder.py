@@ -81,8 +81,6 @@ class ROS1Encoder(Encoder):
             Image()
 
 
-
-
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)

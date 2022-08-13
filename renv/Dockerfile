@@ -4,17 +4,18 @@ WORKDIR /root/Downloads
 
 COPY . .
 
-RUN apt update && apt-get install -y python3-pip
+RUN apt update && apt-get install -y python3-pip \
+    git \
+    libjpeg-dev \
+    libpng-dev \
+    ffmpeg  \
+    libsm6  \
+    libxext6
 
-RUN python3 -m pip install pillow ouster-sdk tqdm bsdf opencv-python
-
-RUN apt update &&  \
-    apt install -y \
-        git \
-        libjpeg-dev \
-        libpng-dev
+RUN python3 -m pip install ouster-sdk tqdm bsdf opencv-python pillow
 
 WORKDIR /tmp
+
 RUN git clone https://github.com/LASzip/LASzip.git && \
     cd LASzip && \
     cmake . && \
