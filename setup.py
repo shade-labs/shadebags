@@ -27,8 +27,7 @@ setup(
     keywords=['Robotics', 'Ros', 'Compression'],  # Keywords
     install_requires=[
         'pillow',
-        'tqdm',
-        'bsdf'
+        'tqdm'
     ],
     classifiers=[
         # Possible: "3 - Alpha", "4 - Beta" or "5 - Production/Stable"

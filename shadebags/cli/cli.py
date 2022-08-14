@@ -30,13 +30,13 @@ subparsers = parser.add_subparsers(help="Different shade options")
 
 compress_parser = subparsers.add_parser('compress', help='Runs the compression algorithm on a bag')
 compress_parser.set_defaults(which='compress')
-compress_parser.add_argument('file', required=True, help='A path to a bag to compress')
-compress_parser.add_argument('type', required=True, help=f'A valid input bag type, valid types are {get_valid_types()}')
+compress_parser.add_argument('file', help='A path to a bag to compress')
+compress_parser.add_argument('type', help=f'A valid input bag type, valid types are {get_valid_types()}')
 
 decompress_parser = subparsers.add_parser('decompress', help='Decompresses a shadebag into the original or different format')
 decompress_parser.set_defaults(which='decompress')
-decompress_parser.add_argument('file', required=True, help='A path to a shadebag to decompress')
-decompress_parser.add_argument('type', required=True, help=f'A valid input bag type, valid types are {get_valid_types()}')
+decompress_parser.add_argument('file', help='A path to a shadebag to decompress')
+decompress_parser.add_argument('type', help=f'A valid input bag type, valid types are {get_valid_types()}')
 
 
 def main():
@@ -55,19 +55,19 @@ def main():
         return
 
     if which == 'compress':
-        if args['path'] is None:
+        if 'path' not in args:
             compress_parser.print_help()
 
-        output_file = f'{os.path.dirname(args["path"])}/{os.path.basename(args["path"]).split(".")[0]}.shade'
-        writer = shadebags.Writer(input_file=args['path'], output_file = output_file, bag_type=map_type(args['type']))
+        writer = shadebags.Writer(input_file=args['file'], output_dir=os.path.dirname(args["file"]), bag_type=map_type(args['type']))
         writer.write()
 
 
     elif which == 'decompress':
-        if args['path'] is None:
+        if 'path' not in args:
             decompress_parser.print_help()
 
-        raise NotImplementedError("Sorry!")
+        reader = shadebags.Reader(input_file=args['file'], output_dir=os.path.dirname(args['file']), bag_type=map_type(args['type']))
+        reader.read()
 
 
 if __name__ == "__main__":

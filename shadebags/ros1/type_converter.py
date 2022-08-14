@@ -14,8 +14,8 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import typing
 
+import typing
 from shadebags.defaults import DataTypes
 
 class Decoder:
@@ -42,7 +42,7 @@ class Decoder:
         :param data: ROS bytes input
         :return: Unmodified data
         """
-        encoding_map = {
+        encoding_map: dict = {
             'mono16': 'I;16',
             'rgb8': 'RGB'
         }
@@ -53,26 +53,3 @@ class Decoder:
     @staticmethod
     def __decode_pointcloud(data: bytes, metadata: dict) -> (dict, typing.Any, DataTypes):
         return metadata, data, DataTypes.pointcloud
-
-
-# class Encoder:
-#     def __init__(self):
-#         self.types = {
-#             DataTypes.image: 'sensor_msgs/Image'
-#         }
-#
-#     def convert_type(self, ros_type, data) -> (typing.Any, DataTypes):
-#         try:
-#             return self.types[ros_type](data)
-#         except KeyError:
-#             print(f"No conversion algorithm matching {ros_type}")
-#             return data, DataTypes.none
-#
-#     @staticmethod
-#     def __encode_image(data: bytes):
-#         """
-#         ROS image types require no modification to be compatible with Shade compression
-#         :param data: ROS bytes input
-#         :return: Unmodified data
-#         """
-#         return data, DataTypes.image

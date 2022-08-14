@@ -137,9 +137,6 @@ class ROS1Decoder(Decoder):
     def write(self, compressed_data: List[ShadeMsg]):
         output_file = rosbag.Bag(self.__output_file, 'w')
 
-        data_writes = 0
-        empty_writes = 0
-
         for shade_msg in compressed_data:
             topic = shade_msg.kwargs['topic']
             msg = shade_msg.kwargs['msg']
