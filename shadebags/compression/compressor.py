@@ -17,18 +17,24 @@
 
 from shadebags.defaults import DataTypes
 from .image_formats import PNG, JPEG
+from .pointcloud import PC
 
 class Compressor:
     def __init__(self):
         self.__jpeg = JPEG()
         self.__png = PNG()
+        self.__pointcloud = PC()
 
     def compress(self, data: bytes, shade_type: DataTypes or None, metadata: dict = None):
+        print(shade_type)
         if shade_type == DataTypes.image:
             if metadata['encoding'] == 'RGB':
                 return self.__jpeg.compress(metadata['encoding'], metadata['width'], metadata['height'], data)
             else:
                 return self.__png.compress(metadata['encoding'], metadata['width'], metadata['height'], data)
+
+        if shade_type == DataTypes.pointcloud:
+            print(self.__pointcloud.compress(metadata, data))
 
     def decompress(self, data: bytes, shade_type: DataTypes or None, metadata: dict = None):
         if shade_type == DataTypes.image:

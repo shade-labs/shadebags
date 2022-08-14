@@ -26,5 +26,5 @@ class BagDefaults(enum.Enum):
 
 class DataTypes(enum.Enum):
     image = 'sensor_msgs/Image'
-    pointcloud = 'sensor_msgs/Pointcloud'
+    pointcloud = 'sensor_msgs/Pointcloud2'
     none = 'none'

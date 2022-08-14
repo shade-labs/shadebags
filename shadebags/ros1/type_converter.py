@@ -22,7 +22,8 @@ class Decoder:
     def __init__(self):
         self.__warned_types = {}
         self.types = {
-            'sensor_msgs/Image': self.__decode_image
+            'sensor_msgs/Image': self.__decode_image,
+            'sensor_msgs/PointCloud2': self.__decode_pointcloud
         }
 
     def convert_type(self, ros_type: str, metadata: dict, body: bytes = None) -> (dict, typing.Any, DataTypes):
@@ -48,6 +49,10 @@ class Decoder:
 
         metadata['encoding'] = encoding_map[metadata['encoding']]
         return metadata, data, DataTypes.image
+
+    @staticmethod
+    def __decode_pointcloud(data: bytes, metadata: dict) -> (dict, typing.Any, DataTypes):
+        return metadata, data, DataTypes.pointcloud
 
 
 # class Encoder:

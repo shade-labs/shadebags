@@ -21,4 +21,4 @@ RUN git clone https://github.com/LASzip/LASzip.git && \
     cmake . && \
     make && \
     make install && \
-    pip install laspy[lazrs,laszip]
+    pip install laspy[lazrs,laszip] pypcd open3d
