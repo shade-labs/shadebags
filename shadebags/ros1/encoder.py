@@ -82,7 +82,7 @@ class ROS1Encoder(Encoder):
         def get_headers(ros_msg):
             try:
                 message = self.__extract_class_attributes(ros_msg)
-            except AttributeError:
+            except AttributeErrorprint:
                 return
 
             return {

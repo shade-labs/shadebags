@@ -34,7 +34,7 @@ class Compressor:
                 return self.__png.compress(metadata['encoding'], metadata['width'], metadata['height'], data)
 
         if shade_type == DataTypes.pointcloud:
-            print(self.__pointcloud.compress(metadata, data))
+            return self.__pointcloud.compress(metadata, data)
 
     def decompress(self, data: bytes, shade_type: DataTypes or None, metadata: dict = None):
         if shade_type == DataTypes.image:

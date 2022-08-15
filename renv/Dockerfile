@@ -1,4 +1,8 @@
-FROM ros:noetic
+FROM ros:noetic-perception
+
+RUN apt update && apt install -y \
+    ros-noetic-ros-numpy \
+    libpcl-dev
 
 WORKDIR /root/Downloads
 
@@ -15,4 +19,4 @@ RUN git clone https://github.com/LASzip/LASzip.git && \
     cmake . && \
     make && \
     make install && \
-    pip install laspy[lazrs,laszip] pypcd open3d
+    pip install laspy[lazrs,laszip] pypcd open3d open3d-ros-helper # python-pcl
