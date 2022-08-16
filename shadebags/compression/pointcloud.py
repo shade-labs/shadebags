@@ -4,11 +4,14 @@ import shutil
 from ouster import client, pcap
 from ouster.sdk.examples import pcap as converter
 
-import ros_numpy
 import numpy as np
-import pypcl
-from open3d_ros_helper import open3d_ros_helper as orh
+import rospy
+import roslib
+import sensor_msgs.point_cloud2 as pc2
 import open3d as o3d
+import ctypes
+import struct
+
 
 class PC:
     def __init__(self):
@@ -16,18 +19,29 @@ class PC:
 
     @staticmethod
     def compress(metadata, data):
-        pc = ros_numpy.numpify(data)
-        points = np.zeros((pc.shape[0], 3))
-        points[:, 0] = pc['x']
-        points[:, 1] = pc['y']
-        points[:, 2] = pc['z']
-        p = pcl.PointCloud(np.array(points, dtype=np.float32))
+        data = pc2.create_cloud(metadata, metadata, data)
 
-        # print("running")
-        # o3dpc = orh.rospc_to_o3dpc(data)
-        # print("modified")
-        # o3d.io.write_point_cloud('test.pcd', o3dpc)
-        # print("saved?")
+        gen = pc2.read_points(data, skip_nans=True)
+        int_data = list(gen)
+        xyz = np.empty((len(int_data), 3))
+        rgb = np.empty((len(int_data), 3))
+
+        for x in int_data:
+            test = x[3]
+            # cast float32 to int so that bitwise operations are possible
+            s = struct.pack('>f', test)
+            i = struct.unpack('>l', s)[0]
+            # you can get back the float value by the inverse operations
+            pack = ctypes.c_uint32(i).value
+            r = (pack & 0x00FF0000) >> 16
+            g = (pack & 0x0000FF00) >> 8
+            b = (pack & 0x000000FF)
+
+        out_pcd = o3d.geometry.PointCloud()
+        out_pcd.points = o3d.utility.Vector3dVector(xyz)
+        out_pcd.colors = o3d.utility.Vector3dVector(rgb)
+        o3d.io.write_point_cloud("./", out_pcd)
+        print("finishing")
 
 
 
