@@ -1,20 +1,22 @@
 FROM ros:noetic-perception
 
-RUN apt update && apt install -y \
-    ros-noetic-ros-numpy
-
 WORKDIR /root/Downloads
 
 COPY . .
 
-RUN apt update && apt-get install -y python3-pip git
+RUN apt update && apt-get install -y  \
+    python3-pip \
+    git \
+    wget \
+    ros-noetic-ros-numpy
 
 RUN python3 -m pip install ouster-sdk tqdm pillow
 
 WORKDIR /tmp
 
-RUN curl https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.9.1.tar.gz && \
-    tar xvfj pcl-pcl-1.9.1.tar.gz && \
+RUN wget https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.9.1.tar.gz && \
+    tar -zxvf pcl-1.9.1.tar.gz && \
+    cd pcl-pcl-1.9.1 && \
     mkdir build && \
     cd build && \
     cmake .. && \
