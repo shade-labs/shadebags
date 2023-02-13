@@ -33,7 +33,7 @@ setup(
         # Possible: "3 - Alpha", "4 - Beta" or "5 - Production/Stable"
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'LICENSE :: OSI APPROVED :: GNU LESSER GENERAL PUBLIC LICENSE V2 OR LATER (LGPLV2+)',
+        'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10'
