@@ -22,7 +22,7 @@ setup(
     ],
     author='Emerson Dove',
     entry_points={'console_scripts': ['shade = shadebags.cli.cli:main']},
-    author_email='emerson@shaderobotics.com',
+    author_email='emerson+github@shade.inc',
     url='https://github.com/open-shade/shadebags',  # Could be github or website
     keywords=['Robotics', 'Ros', 'Compression'],  # Keywords
     install_requires=[
@@ -33,7 +33,6 @@ setup(
         # Possible: "3 - Alpha", "4 - Beta" or "5 - Production/Stable"
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'Intended Audience :: Financial and Insurance Industry',
         'LICENSE :: OSI APPROVED :: GNU LESSER GENERAL PUBLIC LICENSE V2 OR LATER (LGPLV2+)',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
